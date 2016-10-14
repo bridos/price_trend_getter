@@ -1,0 +1,150 @@
+<!DOCTYPE html> 
+<html>
+
+<head>
+  <title>Mtg Price Monitor</title>
+  <meta name="description" content="website description" />
+  <meta name="keywords" content="website keywords, website keywords" />
+  <meta http-equiv="content-type" content="text/html; charset=windows-1252" />
+  <link rel="stylesheet" type="text/css" href="css/tmp.css" />
+  <!-- modernizr enables HTML5 elements and feature detects -->
+  <script type="text/javascript" src="js/modernizr-1.5.min.js"></script>
+</head>
+
+<body>
+  <div id="main">   
+
+    <header>
+    <div id="strapline">
+      <div id="welcome_slogan">
+        <h3>Magic The Gathering Price Monitor</h3>
+      </div><!--close welcome_slogan-->
+      </div><!--close strapline-->    
+    <nav>
+      <div id="menubar">
+          <ul id="nav">
+            <li><a href="index2.html">Home</a></li>
+            <li><a href="view_data.html">View Data</a></li>
+            <li ><a href="latest_values.html">Latest Values</a></li>
+           <!-- <li class="current"><a href="add_card.html">Add Card</a></li> -->
+             <li class="current">
+              <div class='dropdown'>
+                <label class='dropbtn'>Add Card</label>
+                <div class='dropdown-content'>
+                  <ul>
+                    <li >Add Monitored Card</li>
+                    <li >Add Bought Card</li>
+                  </ul>
+                </div>
+              </div>
+            </li>
+            <!--<li><a href="remove_card.html">Remove Card</a></li> -->
+             <li class="current">
+              <div class='dropdown'>
+                <label class='dropbtn'>Remove Card</label>
+                <div class='dropdown-content'>
+                  
+                    <a href='#'>Remove Monitored Card</a>
+                    <a href='#'>Remove Bought Card</a>
+                  
+                </div>
+              </div>
+            </li> 
+            <li><a href="test_area.html">Tests</a></li>
+            <li><a href="analytics.html">Analysis</a></li>
+          </ul>
+        </div><!--close menubar-->  
+      </nav>
+    </header>
+	
+    <div id="curve_chart">  
+    <div id='menu_action' class="slideshow">
+      <br>
+        <p>I want to: 
+          <select onchange="control_function(this.value)">
+            <option value="0" selected>---- Select an action ----</option>
+            <option value="1">Add monitored card</option>
+            <option value="2">Add bought card</option>
+          </select>
+        </p>
+        <!--
+        Card Name: <input id='cardname' type="text" ><br>
+        Card Set: <input  id='setname' type="text" onkeyup='show_hint(this.value)'>Suggestions: <label id='txtHint'>
+        </label><br>
+        Previous Prices: <input id='pricein' type="text" >
+        <button onclick='add_price()'>+</button>
+        <button onclick='pop_price()'>-</button> Prices to add: <label id='pricelbl'></label><br>
+        <button onclick='add_card()'>Add Card</button>
+        -->
+     <!-- <ul class="slideshow">
+          <li class="show"><img width="940" height="250" src="images/img1.jpg" </li>
+          <li><img width="940" height="250" src="images/img3.jpg" /></li>
+        </ul>  -->
+    </div><!--close slideshow-->    
+  </div><!--close curve chart-->  	
+    
+	<div id="site_content">
+
+	  <div class="sidebar_container">       
+		<div class="sidebar">
+          <div class="sidebar_item">
+            <h2>New Website</h2>
+            <p>Welcome to our new website. Please have a look around, any feedback is much appreciated.</p>
+          </div><!--close sidebar_item--> 
+        </div><!--close sidebar-->     		
+		<div class="sidebar">
+          <div class="sidebar_item">
+            <h2>Latest Update</h2>
+            <h3>March 2013</h3>
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque cursus tempor enim.</p>         
+		  </div><!--close sidebar_item--> 
+        </div><!--close sidebar-->
+		<div class="sidebar">
+          <div class="sidebar_item">
+            <h3>February 2013</h3>
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque cursus tempor enim.</p>         
+		  </div><!--close sidebar_item--> 
+        </div><!--close sidebar-->  		
+        <div class="sidebar">
+          <div class="sidebar_item">
+            <h2>Contact</h2>
+            <p>Phone: +44 (0)1234 567891</p>
+            <p>Email: <a href="mailto:info@youremail.co.uk">info@youremail.co.uk</a></p>
+          </div><!--close sidebar_item--> 
+        </div><!--close sidebar-->
+       </div><!--close sidebar_container-->   
+	
+	  <div id="content">
+        <div class="content_item">
+          <h2>Add a card to monitor</h2>
+		    <p>Here you can add a card to monitor along with the others. Carefull with the name and expansion. you can also add custom start values.</p>
+            <div class="content_container">       
+			  <h3>Example 1</h3>
+			  <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec quis sapien vel orci posuere tristique quis vitae nisi. Sed porta venenatis auctor. Fusce iaculis ligula odio.</p>
+            </div><!--close content_container-->
+            <div class="content_container">			  
+			  <h3>Example 2</h3>
+			  <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec quis sapien vel orci posuere tristique quis vitae nisi. Sed porta venenatis auctor. Fusce iaculis ligula odio.</p>
+			</div><!--close content_container-->
+            <div class="content_container">       
+			  <h3>Example 1</h3>
+			  <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec quis sapien vel orci posuere tristique quis vitae nisi. Sed porta venenatis auctor. Fusce iaculis ligula odio.</p>
+            </div><!--close content_container-->
+            <div class="content_container">			  
+			  <h3>Example 2</h3>
+			  <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec quis sapien vel orci posuere tristique quis vitae nisi. Sed porta venenatis auctor. Fusce iaculis ligula odio.</p>
+			</div><!--close content_container-->
+	    </div><!--close content_item-->
+      </div><!--close content-->   
+	</div><!--close site_content-->  	
+    <footer>
+    <a href="index2.html">Home</a> | <a href="view_data.html">View Data</a> | <a href="latest_values.html">Latest Values</a> | <a href="add_card.html">Add Card</a> | <a href="remove_card.html">Remove a Card</a> | <a href="test_area.html">Test Area</a> | <a href="remove_price.html">Remove Price</a><br/><br/>
+    <!--<a href="http://fotogrph.com">Images</a> |  <a href="http://www.heartinternet.co.uk/vps/">Virtual Server</a>  | website template by <a href="http://www.freehtml5templates.co.uk">Free HTML5 Templates</a> -->
+    </footer>
+  </div><!--close main-->
+  
+  <!-- javascript at the bottom for fast page loading -->
+  <script type="text/javascript" src="js/functions.js"></script>
+  
+</body>
+</html>
