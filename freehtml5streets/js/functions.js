@@ -10,6 +10,39 @@ var cards;
 var to_edit;
 function fetch_XML(mode)
 {
+  $.get('http://localhost/tests_folder/price_trend_getter/functions.php',{mode:1})
+    .done(function(data)
+    { 
+      $(data).find("card").each(function()
+      {
+        var tmparr=[];
+        tmparr.push($(this).attr('cardname'));
+        $(this).find('value').each(function()
+        {
+          tmparr.push($(this).attr('value'));
+        })
+      card_array.push(tmparr);
+      tmparr=[];
+      selected_cards.push($(this).attr('cardname'));
+      })
+      //console.log(card_array);
+      pad_array();
+      //mode 1 is called from view_data.html
+      //mode 2 is called from analytics.html and test_area.html function
+      if (mode==1)
+      {  
+        fill_lists();
+        drawChart(1,0); 
+      }  
+      else if(mode==2)
+        analytics();
+      else
+      {}
+    })
+}
+/*
+function fetch_XML(mode)
+{
 		  var xhttp = new XMLHttpRequest();
   		xhttp.onreadystatechange = function()
   		{
@@ -52,6 +85,8 @@ function fetch_XML(mode)
   xhttp.open("GET", "http://localhost/tests_folder/price_trend_getter/functions.php?mode="+1, true);
   xhttp.send();
 }
+*/
+/*
 function show_price()
 {
   var str="<table><tr>";
@@ -70,6 +105,7 @@ function show_price()
   //console.log(str);
   document.getElementById("price_div").innerHTML=str;
 }
+*/
 function pad_array()
 {   var max=-1;
     //tmparr=[];
@@ -128,8 +164,9 @@ function drawChart2(data,pieces,graph)
   myview.setColumns(selectionarr[graph]);
   var chart = new google.visualization.LineChart(document.getElementById('curve_chart'));
   chart.draw(myview, options);
-  generatedropdown(length,pieces);
+  //generatedropdown(length,pieces);
 }
+/*
 function generatedropdown(num,pieces)
 {
   var str='';
@@ -147,6 +184,7 @@ function generatedropdown(num,pieces)
   //console.log(str);
   //document.getElementById("graph_control").innerHTML=str;
  } 
+ */
 function drawChart(num,graph)
 {    
       //alert(card_array.join('\n'));
@@ -184,42 +222,28 @@ function drawChart(num,graph)
         //chart.draw(data, options);
 }
 function get_latest_price()
-{ //alert("latest price");
-  var xhttp = new XMLHttpRequest();
-      xhttp.onreadystatechange = function()
+{
+ //$.get('http://localhost/tests_folder/price_trend_getter/functions.php',{mode:1})
+  //  .done(function(data)
+  $.get('http://localhost/tests_folder/price_trend_getter/functions.php',{mode:2})
+    .done(function(data)
+    { 
+      $(data).find("card").each(function()
       {
-          if (xhttp.readyState == 4 && xhttp.status == 200)
-          {   //alert("response");
-            var replydata=xhttp.responseXML;
-            //alert(replydata);
-            var cards=replydata.documentElement.getElementsByTagName('card');
-            //alert(cards.length);
-
-            for(i=0;i<cards.length;i++)
-            {   var tmparr=[];
-                //card_array.push(cards[i].getAttribute("name"));
-                //card_array.push([]);
-                //card_array[i]=cards[i].getAttribute("name");
-                var values=cards[i].getElementsByTagName('value');
-                //card_array[i].push([]);
-                tmparr.push(cards[i].getAttribute("cardname"));
-                //alert(cards[i].getAttribute("cardname"));
-                for(j=0;j<values.length;j++)
-                {
-                   tmparr.push(values[j].getAttribute("value"));
-                   //card_array[i][j]=values[j].getAttribute("value");
-                   //alert(j+" value is: "+values[j].getAttribute("value"));
-                }
-                card_array.push(tmparr);
-                tmparr=[];
-            }
-            pad_array();
-            //printinfo(card_array);
-            drawChart(1,0);
-          }
-      }
-      xhttp.open("GET", "http://localhost/tests_folder/price_trend_getter/functions.php?mode="+2, true);
-      xhttp.send();
+        var tmparr=[];
+        tmparr.push($(this).attr('cardname'));
+        $(this).find('value').each(function()
+        {
+          tmparr.push($(this).attr('value'));
+        })
+        card_array.push(tmparr);
+        tmparr=[];
+      selected_cards.push($(this).attr('cardname'));
+      })
+      //console.log(card_array);
+      pad_array();
+      drawChart(1,0);
+    })
 }
 function show_hint(event,str)
 {
@@ -256,11 +280,14 @@ function show_hint(event,str)
   }
 }
 function add_price()
-{ val=document.getElementById('pricein').value;
-  
-    document.getElementById('pricelbl').innerHTML+=(' '+val);
+{   val=$("#pricein").val();
+    //val=document.getElementById('pricein').value;
+    console.log(val);
+    $("#pricelbl").append(' '+val);
+    //document.getElementById('pricelbl').innerHTML+=(' '+val);
     price_array.push(val);
-    document.getElementById('pricein').value='';
+    //document.getElementById('pricein').value='';
+    $("#pricein").val('');
 }
 function pop_price()
 { var str='';
@@ -269,108 +296,74 @@ function pop_price()
   price_array.pop();
   for(var i=0;i<price_array.length;i++)
     str+=price_array[i]+' ';
-  document.getElementById('pricelbl').innerHTML=str;
+  $('#pricelbl').html(str);
+  //document.getElementById('pricelbl').innerHTML=str;
 }
 function add_card(mode)
 {
-  var name,set;
+  var name,set,exists;
   var prices,copies,price,action;
-  name=document.getElementById('cardname').value;
-  set=document.getElementById('setname').value;
-  var exists=document.getElementById('copies');
+  exists=$('#copies').val();
   if(exists===null)
   {}// console.log("no id");
   else 
-    copies=document.getElementById('copies').value;
-  exists=document.getElementById('price');
+    copies=$('#copies').val();
+  exists=$('#price').val();
   if(exists===null)
   {}//  console.log('no id');
   else
-    price=document.getElementById('price').value;
-  //console.log("ajax"+mode);
+    price=$('#price').val();
   if(name==''||set==''||copies==''||price=='')
     return;
-  prices=JSON.stringify(price_array);
-  //alert(prices);
+  prices_a=JSON.stringify(price_array);
   mode==2?action='buy':action='sell';
-  console.log(action);
-  var xmlhttp = new XMLHttpRequest();
+  //console.log("info: "+name+" "+set+" "+prices_a);
   if(mode==1)
-  { //console.log(mode);
-    xmlhttp.onreadystatechange = function()
-    {
-      if (xmlhttp.readyState == 4 && xmlhttp.status == 200)
-      {
-        document.getElementById('cardname').value='';
-        document.getElementById('setname').value='';
-        document.getElementById('pricelbl').innerHTML='';
-        //document.getElementById("txtHint").innerHTML='';
-        price_array=[];
-                //document.getElementById("txtHint").innerHTML = xmlhttp.responseText;
-      }
-    };
-    xmlhttp.open("GET", "http://localhost/tests_folder/price_trend_getter/functions.php?mode="+3+"&name="+name+"&set="+set+"&prices="+prices, true);
-    xmlhttp.send();
-    console.log('"GET", "http://localhost/tests_folder/price_trend_getter/functions.php?mode="+3+"&name="'+name+'"&set="'+set+'"&prices="'+prices+', true');
+  {
+    $.get('http://localhost/tests_folder/price_trend_getter/functions.php',{mode:3,
+      name:$('#cardname').val(),set:$('#setname').val(),prices:prices_a})
+    .done(function()
+    { 
+      //perform cleanup of fields
+      $('#cardname').val('');$('#setname').val('');$('#pricelbl').val('');price_array=[];
+      //alert("sent");
+    });
   }
   else if(mode==2||mode==3)
-  { //console.log(mode);
-    xmlhttp.onreadystatechange = function()
+  {
+    $.get('http://localhost/tests_folder/price_trend_getter/functions.php',{mode:8,
+      name:$('#cardname').val(),set:$('#setname').val(),price:price,copies:copies,action:action})
+    .done(function()
     {
-      if (xmlhttp.readyState == 4 && xmlhttp.status == 200)
-      {
-        document.getElementById('cardname').value='';
-        document.getElementById('setname').value='';
-        document.getElementById('price').value='';
-        document.getElementById('copies').value='';
-      }
-    };
-    xmlhttp.open("GET", "http://localhost/tests_folder/price_trend_getter/functions.php?mode="+8+"&name="+name+"&set="+set+"&price="+price+"&copies="+copies+"&action="+action, true);
-    xmlhttp.send();
-    console.log('"GET", "http://localhost/tests_folder/price_trend_getter/functions.php?mode="+8+"&name="'+name+'"&set="'+set+'"&price="'+price+'"&copies="'+copies+'"&action="'+action+', true');
+      //perform field cleanup
+      $('#cardname').val('');$('#setname').val('');$('#price').val('');$('#copies').val('');
+
+    });
   }
   else if (mode==4)
   {
-    xmlhttp.onreadystatechange = function()
-    {
-      if (xmlhttp.readyState == 4 && xmlhttp.status == 200)
-      {
-        document.getElementById('cardname').value='';
-        document.getElementById('setname').value='';
-        document.getElementById('price').value='';
-        document.getElementById('copies').value='';
-      }
-    };
-    xmlhttp.open("GET", "http://localhost/tests_folder/price_trend_getter/functions.php?mode="+12+"&name="+name+"&set="+set+"&price="+price+"&copies="+copies, true);
-    xmlhttp.send();
-    console.log('"GET", "http://localhost/tests_folder/price_trend_getter/functions.php?mode="+12+"&name="'+name+'"&set="'+set+'"&price="'+price+'"&copies="'+copies+', true');
-
+    $.get("http://localhost/tests_folder/price_trend_getter/functions.php",{mode:12,
+      name:$('#cardname').val(),set:$('#setname').val(),price:price,copies:copies})
+    //perform field cleanup
+    $('#cardname').val('');$('#setname').val('');$('#price').val('');$('#copies').val('');
   }
+  else{}
 }
+
 function get_cards()
 {
-  var xmlhttp = new XMLHttpRequest();
-  xmlhttp.onreadystatechange = function()
-  {
-    if (xmlhttp.readyState == 4 && xmlhttp.status == 200)
+  $.get('http://localhost/tests_folder/price_trend_getter/functions.php',{mode:5})
+    .done(function(data)
     {
-      var replydata=xmlhttp.responseXML;
-      var cards=replydata.documentElement.getElementsByTagName('card');
       var str='List of cards: <select id="del_card_sel">';
-      var size=cards.length;
-      //alert(size);
-      for (var i = 0; i<size; i++)
-      { 
-        //alert(cards[i].getAttribute['cardname']);
-        str+='<option>'+cards[i].getAttribute('cardname')+'</option>';
-      }
-      str+='</select><br><br><button  class="submit" onclick="edit_menu()()">Back</button>';
+      $(data).find("card").each(function()
+      {
+        str+='<option>'+$(this).attr('cardname')+'</option>';
+      })
+      str+='</select><br><br><button  class="submit" onclick="edit_menu()">Back</button>';
       str+='<button class = "submit" onclick="delete_card()">Delete</button>';
-      document.getElementById("analytics_info").innerHTML = str;
-    }
-  };
-  xmlhttp.open("GET", "http://localhost/tests_folder/price_trend_getter/functions.php?mode="+5, true);
-  xmlhttp.send();
+      $('#analytics_info').html(str);
+    })
 }
 function del_function(mode)
 {
@@ -381,31 +374,21 @@ function del_function(mode)
 }
 function get_bought_cards()
 {
-  var xmlhttp = new XMLHttpRequest();
-  xmlhttp.onreadystatechange = function()
-  {
-    if (xmlhttp.readyState == 4 && xmlhttp.status == 200)
+  $.get("http://localhost/tests_folder/price_trend_getter/functions.php",{mode:7})
+    .done(function(data)
     {
-      var replydata=xmlhttp.responseXML;
-      var cards=replydata.documentElement.getElementsByTagName('card');
       var str='List of cards: <select id="del_card_sel2">';
-      var size=cards.length;
-      //alert(size);
-      //console.log(mode);
-      for (var i = 0; i<size; i++)
-      { 
-        //if(mode==cards[i].getAttribute('action'))//alert(cards[i].getAttribute['cardname']);
-          str+='<option value='+cards[i].getAttribute('id')+'>'+cards[i].getAttribute('name')+'</option>';
-      }
+      $(data).find("card").each(function()
+      {
+        str+='<option value='+$(this).attr('id')+'>'+$(this).attr('name')+'</option>';
+      })
       str+='</select><br><br>';
       str+='<button  class="submit" onclick="edit_menu()">Back</button>';
       str+='<button class = "submit" onclick="delete_bought_card()">Delete</button>';
-      document.getElementById("analytics_info").innerHTML = str;
-    }
-  };
-  xmlhttp.open("GET", "http://localhost/tests_folder/price_trend_getter/functions.php?mode="+7, true);
-  xmlhttp.send();
+      $("#analytics_info").html(str);
+    })
 }
+
 function delete_card_options()
 {
   var str='';
@@ -415,56 +398,38 @@ function delete_card_options()
   str+="<option value='1'>Delete a monitored card</option>";
   str+="<option value='2'>Delete a bought card</option>";
   str+="</select>";
-  document.getElementById('cardlist').innerHTML=str;
+  $('#cardlist').innerHTML=str;
 }
 function delete_bought_card()
-{ 
-  var e = document.getElementById('del_card_sel2');
-  var name=e.options[e.selectedIndex].value;
-  var xmlhttp = new XMLHttpRequest();
-  xmlhttp.onreadystatechange = function()
-  {
-    if (xmlhttp.readyState == 4 && xmlhttp.status == 200)
+{
+  $.get("http://localhost/tests_folder/price_trend_getter/functions.php",{mode:9,name:$("#del_card_sel2 option:selected").val()})
+    .done(function()
     {
       get_bought_cards();
-    }
-  };
-  xmlhttp.open("GET","http://localhost/tests_folder/price_trend_getter/functions.php?mode="+9+"&name="+name, true);
-  xmlhttp.send();
+    })
 }
 function delete_card()
 {
-  //var pos=document.getElementById('del_card_sel').selectedIndex;
-  var e = document.getElementById('del_card_sel');
-  var pos=e.options[e.selectedIndex].value;
-  //alert(pos);
-  var xmlhttp = new XMLHttpRequest();
-  xmlhttp.onreadystatechange = function()
-  {
-    if (xmlhttp.readyState == 4 && xmlhttp.status == 200)
-    {
-      get_cards();
-    }
-  };
-  xmlhttp.open("GET", "http://localhost/tests_folder/price_trend_getter/functions.php?mode="+6+"&num="+pos, true);
-  xmlhttp.send();
+  var pos=$('#del_card_sel option:selected').val();
+  $.get('http://localhost/tests_folder/price_trend_getter/functions.php',{mode:6,num:pos})
+    .done(get_cards());
+  //console.log(pos);
 }
+
 function fill_lists()
 {
   var str='';
   //str+="<button onclick='add_element();generate_graph3();'>Add</button>";
   str+='<select id="available_cards" size="5" style="width:150px; oveflow:scroll;" class="addlist">';
   for (var i = 0; i<available_cards.length; i++)
-  {  
-      if(i==0)
-        str+="<option value="+i+" selected draggable='true' class='addlist'>"+available_cards[i]+"</option>";
-      else
-        str+="<option value="+i+" draggable='true' class='addlist'>"+available_cards[i]+"</option>";
-      //console.log("card"+card_array[i][0]);
-      //alert(card_array[i][0]);
-  }
+    if(i==0)
+      str+="<option value="+i+" selected draggable='true' class='addlist'>"+available_cards[i]+"</option>";
+    else
+      str+="<option value="+i+" draggable='true' class='addlist'>"+available_cards[i]+"</option>";
   str+="</select>";
-  document.getElementById("to_add").innerHTML=str;
+  $('#to_add')
+    .html(str);
+  //document.getElementById("to_add").innerHTML=str;
 str="";
 str+="<select id='selected_cards' size='5' style='width:150px; oveflow:scroll;' class='removelist'>";
   for (var i = selected_cards.length - 1; i >= 0; i--) {
@@ -475,21 +440,24 @@ str+="<select id='selected_cards' size='5' style='width:150px; oveflow:scroll;' 
   }
   str+="</select>";
   //str+="<button onclick='remove_element();generate_graph3();'>Remove</button>";
-  document.getElementById("to_remove").innerHTML=str;
-  document.getElementById('selected_cards').ondblclick = function(){
+  $('#to_remove')
+    .html(str);
+  //document.getElementById("to_remove").innerHTML=str;
+  $('#selected_cards').dblclick(function()
+  {
     remove_element();
-    var pos=document.getElementById('selected_cards');
-    var value=pos.options[pos.selectedIndex].text;
-    var x=document.getElementById("available_cards");
+    var sel=$('select[id=selected_cards]');
+    var value=$('select[id=selected_cards]').val();
+    var name=$('#selected_cards option:selected').text();
+    console.log(name);
+    var x=$('select[id=available_cards]');
     var option=document.createElement("option");
-    option.text=value;
+    option.text=name;
     option.setAttribute('draggable','true');
-    x.appendChild(option);
-    pos.remove(pos.selectedIndex);
-    //alert(this.selectedIndex);
-    // or alert(this.options[this.selectedIndex].value);
+    $('#selected_cards option:selected').remove();
+    $('#available_cards').append(option);
     generate_graph3();
-};
+  });
 }
 function add_element()
 {
@@ -502,10 +470,13 @@ function add_element()
 }
 function remove_element()
 {
-  var e=document.getElementById("selected_cards");
-  available_cards.push(e.options[e.selectedIndex].text);
+  //var e=document.getElementById("selected_cards");
+  var name=$('#selected_cards option:selected').text();
+  available_cards.push(name);
+  //available_cards.push(e.options[e.selectedIndex].text);
   //console.log(e.options[e.selectedIndex].text);
-  var index = selected_cards.indexOf(e.options[e.selectedIndex].text);
+  var index=selected_cards.indexOf(name);
+  //var index = selected_cards.indexOf(e.options[e.selectedIndex].text);
   selected_cards.splice(index,1);
   //fill_lists();
 }
@@ -635,7 +606,8 @@ function analytics()
         }
       }  
       str+="<button onclick='analytics_menu()'>Back</button>";
-      document.getElementById('analytics_info').innerHTML=str;
+      $('#analytics_info').html(str);
+      //document.getElementById('analytics_info').innerHTML=str;
         //console.log(str);
 }
 function profit_or_loss(copies,buy,current,action)
@@ -658,30 +630,25 @@ function profit_or_loss(copies,buy,current,action)
 }
 function my_bought_cards()
 {
-  var xmlhttp = new XMLHttpRequest();
-  xmlhttp.onreadystatechange = function()
-  {
-    if (xmlhttp.readyState == 4 && xmlhttp.status == 200)
+  $.get("http://localhost/tests_folder/price_trend_getter/functions.php",{mode:7})
+    .done(function(data)
     {
-      var replydata=xmlhttp.responseXML;
-      var cards=replydata.documentElement.getElementsByTagName('card');
-      var size=cards.length;
-      for (var i = 0; i<size; i++)
-      { 
-        var tmp_arr=[];
-        tmp_arr.push(cards[i].getAttribute('name'));
-        tmp_arr.push(cards[i].getAttribute('set'));
-        tmp_arr.push(cards[i].getAttribute('copies'));
-        tmp_arr.push(cards[i].getAttribute('price'));
-        tmp_arr.push(cards[i].getAttribute('action'));
-        bought_cards_array.push(tmp_arr);
-      }
+      $(data).find('card').each(function()
+      {
+        var tmparr=[]
+        tmparr.push($(this).attr('name'));
+        tmparr.push($(this).attr('set'));
+        tmparr.push($(this).attr('copies'));
+        tmparr.push($(this).attr('price'));
+        tmparr.push($(this).attr('action'));
+        //console.log("tmp_arr"+tmparr);
+        bought_cards_array.push(tmparr);
+      })
+      console.log(bought_cards_array);
       fetch_XML(2);
-    }
-  };
-  xmlhttp.open("GET", "http://localhost/tests_folder/price_trend_getter/functions.php?mode="+7, true);
-  xmlhttp.send();
+    })
 }
+/*
 function add_bought_card()
 {
   var name,set,copies,price;
@@ -691,6 +658,7 @@ function add_bought_card()
   xmlhttp.open("GET", "http://localhost/tests_folder/price_trend_getter/functions.php?mode="+8+"&name="+name+"&set="+set+"&price="+price+"&copies="+copies, true);
   xmlhttp.send();
 }
+*/
 function control_function(mode)
 {
   var str='';
@@ -727,8 +695,9 @@ function control_function(mode)
     str+="<tr><td><button onclick='edit_menu()'>Back</button>";
     str+="<button onclick='add_card("+mode+")'>Add Sold Card</button></td><td></td></tr></table>";
   }
-  document.getElementById('analytics_info').innerHTML=str;
+  $('#analytics_info').html(str);
 }
+/*
 function back()
 {
   var str='<br>';
@@ -741,6 +710,8 @@ function back()
   str+='</select></p>';
   document.getElementById('').innerHTML=str;
 }
+*/
+/*
 function compare_sell_trend()
 { console.log('call');
   var xmlhttp = new XMLHttpRequest();
@@ -765,6 +736,7 @@ function compare_sell_trend()
   xmlhttp.open("GET", "http://localhost/tests_folder/price_trend_getter/functions.php?mode="+10, true);
   xmlhttp.send();
 }
+*/
 function edit_menu()
 {
   var str='';
@@ -775,16 +747,19 @@ function edit_menu()
   str+="<option value = '3'>Edit my offers</option>";
   str+="</select><br>";
   str+="<button onclick='next()'>Go</button>";
-  document.getElementById('analytics_info').innerHTML=str;
+  //document.getElementById('analytics_info').innerHTML=str;
+  $('#analytics_info').html(str);
 }
 function next()
 {
-  var sel=document.getElementById('sel_option');
+  //var sel=$('#sel_option selected:sel_option').value;
+  var sel=$('select[id=sel_option]').val();
+  //var sel=document.getElementById('sel_option');
   var str='';
-  console.log(sel.selectedIndex);
-  if(sel.selectedIndex==0)
+  console.log("sel is: "+sel);
+  if(sel==0)
     return;
-  else if(sel.selectedIndex==1)
+  else if(sel==1)
   {
     str+="<select id='monitored_options'>";
     str+="<option value='0' selected>--Choose an action--</option>";
@@ -794,9 +769,8 @@ function next()
     str+="<select><br>";
     str+="<button onclick='edit_menu()'>Back</button>";
     str+="<button onclick='next2_1()'>Go</button>";
-    document.getElementById('analytics_info').innerHTML=str;
   }
-  else if(sel.selectedIndex==2)
+  else if(sel==2)
   {
     str+="<select id='monitored_options'>";
     str+="<option value='0' selected>--Choose an action--</option>";
@@ -807,7 +781,6 @@ function next()
     str+="<select><br>";
     str+="<button onclick='edit_menu()'>Back</button>";
     str+="<button onclick='next2_2()'>Go</button>";
-    document.getElementById('analytics_info').innerHTML=str;
   }
   else
   {
@@ -819,53 +792,52 @@ function next()
     str+="<select><br>";
     str+="<button onclick='edit_menu()'>Back</button>";
     str+="<button onclick='next2_3()'>Go</button>";
-    document.getElementById('analytics_info').innerHTML=str;
   }
+  $('#analytics_info').html(str);
 }
 function next2_1()
 { //manage monitored_cards
-  var sel=document.getElementById('monitored_options');
+  //var sel=document.getElementById('monitored_options');
+  var sel=$('select[id=monitored_options] ').val();
   var str='';
-  if(sel.selectedIndex==0)
+  if(sel==0)
     return;
-  else if(sel.selectedIndex==1)
+  else if(sel==1)
     control_function(1);
-  else if(sel.selectedIndex==2)
+  else if(sel==2)
     get_cards();
-  else if(sel.selectedIndex==3)
+  else if(sel==3)
     erase_latest();
   else
   {}
 }
 function next2_2()
 { //manage bought/sold_cards
-  var sel=document.getElementById('monitored_options');
-  var str='';
+  var sel=$('select[id=monitored_options]').val();
+  //var sel=document.getElementById('monitored_options');
+  //var str='';
   console.log('next2_2');
-  if(sel.selectedIndex==0)
+  if(sel==0)
     return;
-  else if(sel.selectedIndex==1)
-    control_function(2);
-  //else if(sel.selectedIndex==2)
-   // get_bought_cards('buy');
-  else if(sel.selectedIndex==2)
+  else if(sel==1)
+    control_function(2);            
+  else if(sel==2)
     control_function(3);
-  else if(sel.selectedIndex==3)
+  else if(sel==3)
     get_bought_cards();
   else{}
 }
 function next2_3()
 { //manage selling cards
-  var sel=document.getElementById('monitored_options');
-  var str='';
-  if(sel.selectedIndex==0)
+  var sel=$('select[id=monitored_options]').val();
+  if(sel==0)
     return;
-  else if(sel.selectedIndex==1)
+  else if(sel==1)
     add_selling_card();
-  else if(sel.selectedIndex==2)
+  else if(sel==2)
     select_selling_card();
-   else if(sel.selectedIndex==3)
-    edit_selling_card();  
+   else if(sel==3)
+    edit_selling_card();
   else{}
 }
 function add_selling_card()
@@ -877,182 +849,143 @@ function add_selling_card()
     str+="<tr><td>Price: </td><td><input id='price' type='text'></td></tr>";
     str+="<tr><td><button onclick='edit_menu()'>Back</button>";
     str+="<button onclick='add_card("+4+")'>Add Offer</button></td><td></td></tr></table>";
-    document.getElementById('analytics_info').innerHTML=str;
+    $('#analytics_info').html(str);
 }
 function select_selling_card()
 {
-  var xmlhttp = new XMLHttpRequest();
-  xmlhttp.onreadystatechange = function()
-  {
-    if (xmlhttp.readyState == 4 && xmlhttp.status == 200)
+  $.get("http://localhost/tests_folder/price_trend_getter/functions.php",{mode:10})
+    .done(function(data)
     {
-      var replydata=xmlhttp.responseXML;
-      var cards=replydata.documentElement.getElementsByTagName('card');
       var str='List of cards: <select id="del_card_sel2">';
-      var size=cards.length;
-      for (var i = 0; i<size; i++)
-      { 
-        str+='<option value='+cards[i].getAttribute('id')+'>'+cards[i].getAttribute('name')+'</option>';
-      }
+
+      $(data).find('card').each(function()
+      {
+        str+='<option value='+$(this).attr('id')+'>'+$(this).attr('name')+'</option>';
+      })
       str+='</select><br><br>';
       str+='<input id="update_sold" type="checkbox" value="">Add to sold cards<br>';
       str+='<button  class="submit" onclick="edit_menu()">Back</button>';
       str+='<button class = "submit" onclick="remove_selling_card()">Delete</button>';
-      document.getElementById("analytics_info").innerHTML = str;
-    }
-  };
-  xmlhttp.open("GET", "http://localhost/tests_folder/price_trend_getter/functions.php?mode="+10, true);
-  xmlhttp.send();
+      $('#analytics_info').html(str);
+    })
 }
 function remove_selling_card()
 {
-  var sel=document.getElementById('del_card_sel2');
-  var to_del=sel.options[sel.selectedIndex].value;
-  var chkbox=document.getElementById('update_sold');
-  var update;
-  if(chkbox.checked)
-    update=1;
-  else
-    update=0;
-  //console.log(update);
-  var xmlhttp = new XMLHttpRequest();
-  xmlhttp.onreadystatechange = function()
-  {
-    if (xmlhttp.readyState == 4 && xmlhttp.status == 200)
-      select_selling_card();
-  };
-  xmlhttp.open("GET", "http://localhost/tests_folder/price_trend_getter/functions.php?mode="+13+"&id="+to_del+"&update="+update, true);
-  xmlhttp.send();
+  $.get("http://localhost/tests_folder/price_trend_getter/functions.php",
+    {mode:13,id:$('select[id=del_card_sel2]').val(),update:$('#update_sold').is(':checked')?update=1:update=0})
+    .done(select_selling_card())
 }
 function edit_selling_card()
-{
-  var xmlhttp = new XMLHttpRequest();
-  xmlhttp.onreadystatechange = function()
-  {
-    if (xmlhttp.readyState == 4 && xmlhttp.status == 200)
+{ var tmparr=[];
+  $.get("http://localhost/tests_folder/price_trend_getter/functions.php",{mode:10})
+    .done(function(data)
     {
-      var replydata=xmlhttp.responseXML;
-      cards=replydata.documentElement.getElementsByTagName('card');
-      //var o=document.createElement('<select id="del_card_sel2">');
-      //o.innerHTML
-      
       var str='List of cards: <select id="del_card_sel2">';
-      var size=cards.length;
-      for (var i = 0; i<size; i++)
-      { 
-        str+='<option value='+cards[i].getAttribute('id')+'>'+cards[i].getAttribute('name')+'</option>';
-      }
+      
+      $(data).find('card').each(function()
+      {
+        str+='<option value='+$(this).attr('id')+'>'+$(this).attr('name')+'</option>';
+        tmparr.push($(this));
+      })
       str+='</select><br><br>';
       str+='<button  class="submit" onclick="edit_menu()">Back</button>';
       str+='<button class = "submit" onclick="edit_offer()">Edit</button>';
-      document.getElementById("analytics_info").innerHTML = str;
-    }
-  };
-  xmlhttp.open("GET", "http://localhost/tests_folder/price_trend_getter/functions.php?mode="+10, true);
-  xmlhttp.send();
+      $('#analytics_info').html(str);
+    })
+    //console.log("end "+tmparr);
+    cards=tmparr;
+    //console.log(cards);
 }
-function edit_offer()
+function edit_offer() 
 {
+  //console.log(cards);
   var str='';
-  var sel=document.getElementById('del_card_sel2');
-  var e=sel.selectedIndex;
-  to_edit=sel.options[sel.selectedIndex].value;
-  console.log(e);
-  
+  //var sel=$("#del_card_sel2").val();
+  //var select=$("#del_card_sel2");
+  //console.log("msg: " + $('#del_card_sel2').prop('selectedIndex'));
+  to_edit=$('#del_card_sel2 option:selected').val();
+  var name=$("#del_card_sel2 option:selected").text();
+  var e=$('#del_card_sel2 option:selected').index();
+  var str='';
   str+="<table>";
   str+="<tr><th>Stored</th><th>New</th></tr>";
-  str+="<tr><td>Name: <label id='oname'>"+cards[e].getAttribute('name')+"</label></td><td><input id='cname'></td></tr>";
-  str+="<tr><td>Set: <label id='oset'>"+cards[e].getAttribute('set')+"</label></td><td><input id='cset'></td></tr>";
-  str+="<tr><td>Quantity: <label id='ocopies'>"+cards[e].getAttribute('copies')+"</label></td><th><input id='ccopies'></td></tr>";
-  str+="<tr><td>Price: <label id='oprice'>"+cards[e].getAttribute('price')+"</label></td><td><input id='cprice'></td></tr>";
-  str+="</table><br><button onclick='edit()'>Edit</button>";
-  document.getElementById('analytics_info').innerHTML=str;
+  str+="<tr><td>Name: <label id='oname'>"+cards[e].attr('name')+"</label></td><td><input id='cname'></td></tr>";
+  str+="<tr><td>Set: <label id='oset'>"+cards[e].attr('set')+"</label></td><td><input id='cset'></td></tr>";
+  str+="<tr><td>Quantity: <label id='ocopies'>"+cards[e].attr('copies')+"</label></td><th><input id='ccopies'></td></tr>";
+  str+="<tr><td>Price: <label id='oprice'>"+cards[e].attr('price')+"</label></td><td><input id='cprice'></td></tr>";
+  
+  str+="</table><br><button  class=submit onclick='edit_menu()'>Back</button><button onclick='edit()'>Edit</button>";
+  $('#analytics_info').html(str);
 }
 function edit()
 {
-  var sel=document.getElementById('del_card_sel2');
-  //to_edit=sel.options[sel.selectedIndex].value;
-  var name=document.getElementById('cname').value;
-  var set=document.getElementById('cset').value;
-  var copies=document.getElementById('ccopies').value;
-  var price=document.getElementById('cprice').value;
-  if(name==''&&set==''&&copies==''&&price=='')
+  var tname=$('#cname').val();
+  var tset=$('#cset').val();
+  var tcopies=$('#ccopies').val();
+  var tprice=$("#cprice").val();
+  
+  if(tname==''&&tset==''&&tcopies==''&&tprice=='')
     return;
-  if (name=='')
-    name=document.getElementById('oname').innerHTML;
-  if (set=='')
-    set=document.getElementById('oset').innerHTML;
-  if (copies=='')
-    copies=document.getElementById('ocopies').innerHTML;
-  if (price=='')
-    price=document.getElementById('oprice').innerHTML;
-  if(price%1===0)
-    price=price+'.0';
-  var xmlhttp = new XMLHttpRequest();
-  xmlhttp.onreadystatechange = function()
-  {
-    if (xmlhttp.readyState == 4 && xmlhttp.status == 200)
+  if (tname=='')
+    tname=$('#oname').text();
+  if (tset=='')
+    tset=$('#oset').text()
+  if (tcopies=='')
+    tcopies=$('#ocopies').text()
+  if (tprice=='')
+    tprice=$('#price').text();
+  if(tprice%1===0)
+    tprice=tprice+'.0';
+  console.log("name: "+tname+" set: "+tset+" "+to_edit);
+
+  $.get("http://localhost/tests_folder/price_trend_getter/functions.php",{mode:14,name:tname,set:tset,copies:tcopies,price:tprice,id:to_edit})
+    .done(function(data)
     {
-       edit_selling_card();
-    }
-  };
-  xmlhttp.open("GET", "http://localhost/tests_folder/price_trend_getter/functions.php?mode="+14+"&name="+name+"&set="+set+"&price="+price+"&copies="+copies+"&price="+price+"&id="+to_edit, true);
-  xmlhttp.send();
-  //console.log(name+set+copies+price);
+      edit_selling_card();
+    })
 }
 function erase_latest()
 {
   var str='';
 
   str+="Press this to erase last entry in daily updated cards: <button onclick='erase()''>Erase</button>";
-  document.getElementById('analytics_info').innerHTML=str;
+  $('#analytics_info').html(str);
+  //document.getElementById('analytics_info').innerHTML=str;
 }
 function erase()
 {
-  var xmlhttp = new XMLHttpRequest();
-  xmlhttp.onreadystatechange = function()
-  {
-    if (xmlhttp.readyState == 4 && xmlhttp.status == 200)
+  $.get("http://localhost/tests_folder/price_trend_getter/functions.php",{mode:15})
+    .done(function()
     {
-       edit_menu();
-    }
-  };
-  xmlhttp.open("GET", "http://localhost/tests_folder/price_trend_getter/functions.php?mode="+15, true);
-  xmlhttp.send();
+      edit_menu();
+    })
 }
 function displaydata()
 {
-  var sel=document.getElementById('data_list');
-  var e=sel.selectedIndex;
-  //console.log(e);
-  if(e==1)
-    my_bought_cards();  
-  else if(e==2)
+  var sel=$('#data_list option:selected').val()
+  //var sel=document.getElementById('data_list');
+  //var e=sel.selectedIndex;
+  console.log(sel);
+
+  if(sel==1)
+    my_bought_cards();
+  else if(sel==2)
     my_offers();
   else{}
 }
 function my_offers()
-{
-  var xmlhttp = new XMLHttpRequest();
-  xmlhttp.onreadystatechange = function()
-  {
-    if (xmlhttp.readyState == 4 && xmlhttp.status == 200)
+{ var str='';
+  $.get("http://localhost/tests_folder/price_trend_getter/functions.php",{mode:11})
+    .done(function(data)
     {
-      var replydata=xmlhttp.responseXML;
-      var cards=replydata.documentElement.getElementsByTagName('card');
-      var str='';
-      var size=cards.length;
-      for (var i = 0; i<size; i++)
-      { 
-        str+='You are selling: '+cards[i].getAttribute('name')+' at: '+cards[i].getAttribute('price');
-        str+=' it is now selling for: '+cards[i].getAttribute('current')+"<br>";
-      }
+      $(data).find('card').each(function()
+      {
+        str+='You are selling: '+$(this).attr('name')+' at: '+$(this).attr('price');
+        str+=' it is now selling for: '+$(this).attr('current')+"<br>";
+      })
       str+="<button onclick='analytics_menu()'>Back</button>";
-      document.getElementById("analytics_info").innerHTML = str;
-    }
-  };
-  xmlhttp.open("GET", "http://localhost/tests_folder/price_trend_getter/functions.php?mode="+11, true);
-  xmlhttp.send();
+      $("#analytics_info").html(str);
+    })
 }
 function analytics_menu()
 {
@@ -1064,7 +997,7 @@ function analytics_menu()
   str+="<option value='2'>Data for offers</option>";
   str+="</select>";
   str+="<button onclick='displaydata()'>Go</button>"; 
-  document.getElementById('analytics_info').innerHTML=str;
+  $('#analytics_info').html(str);
 }
 function view_data()
 {
@@ -1076,69 +1009,55 @@ function view_data()
   str+="<option value='3'>View bought/sold cards</option>";
   str+="/<select>";
   str+="<button onclick=view_menu()>View</button>";
-  document.getElementById('curve_chart').innerHTML=str;
+  $('#curve_chart')
+    .html(str);
 }
+
 function view_menu()
 {
-  var sel=document.getElementById('data_list_2');
-  var e=sel.selectedIndex;
-  if (e==0)
+  var sel=$('select[id=data_list_2]').val();
+  if (sel==0)
     return;
-  else if(e==1)
+  else if(sel==1)
     fetch_XML(1);
-  else if(e==2)
+  else if(sel==2)
     view_offers();
-  else if(e==3)
+  else if(sel==3)
     view_bought_sold();
 }
 function view_offers()
-{ 
-  var xmlhttp = new XMLHttpRequest();
-  xmlhttp.onreadystatechange = function()
-  {
-    if (xmlhttp.readyState == 4 && xmlhttp.status == 200)
+{ var str='';
+  str+='<table>';
+  str+="<tr><th>Card name</th><th>Card Set</th><th>Copies</th><th>Price</th></tr>";
+  $.get('http://localhost/tests_folder/price_trend_getter/functions.php',{mode:10})
+    .done(function(data)
     {
-      var replydata=xmlhttp.responseXML;
-      var cards=replydata.documentElement.getElementsByTagName('card');
-      var str='';
-      str+='<table>';
-      str+="<tr><th>Card name</th><th>Card Set</th><th>Copies</th><th>Price</th></tr>"
-      for(var i=0;i<cards.length;i++)
+      $(data).find("card").each(function()
       {
-        str+="<tr><td>"+cards[i].getAttribute('name')+"</td><td>"+cards[i].getAttribute('set')+"</td>";
-        str+="<td style='text-align:center'>"+cards[i].getAttribute('copies')+"</td><td>"+cards[i].getAttribute('price')+"</td></tr>";
-      }
+        str+="<tr><td>"+$(this).attr('name')+"</td><td>"+$(this).attr('set')+"</td>";
+        str+="<td style='text-align:center'>"+$(this).attr('copies')+"</td><td>"+$(this).attr('price')+"</td></tr>";
+      }) 
       str+="</table>";
-      str+="<button onclick='view_data()'>Back</button>"
-      document.getElementById('curve_chart').innerHTML=str;
-    }
-  };
-  xmlhttp.open("GET", "http://localhost/tests_folder/price_trend_getter/functions.php?mode="+10, true);
-  xmlhttp.send();
+      str+="<button onclick='view_data()'>Back</button>";
+      $('#curve_chart')
+      .html(str);
+    });
 }
 function view_bought_sold()
-{
-  var xmlhttp = new XMLHttpRequest();
-  xmlhttp.onreadystatechange = function()
-  {
-    if (xmlhttp.readyState == 4 && xmlhttp.status == 200)
+{ var str='';
+  str+='<table>';
+  str+="<tr><th>Card name</th><th>Card Set</th><th>Copies</th><th>Price</th><th>Action</th></tr>"
+  $.get('http://localhost/tests_folder/price_trend_getter/functions.php',{mode:7})
+    .done(function(data)
     {
-      var replydata=xmlhttp.responseXML;
-      var cards=replydata.documentElement.getElementsByTagName('card');
-      var str='';
-      str+='<table>';
-      str+="<tr><th>Card name</th><th>Card Set</th><th>Copies</th><th>Price</th><th>Action</th></tr>"
-      for(var i=0;i<cards.length;i++)
+      $(data).find("card").each(function()
       {
-        str+="<tr><td>"+cards[i].getAttribute('name')+"</td><td>"+cards[i].getAttribute('set')+"</td>";
-        str+="<td style='text-align:center'>"+cards[i].getAttribute('copies')+"</td><td>"+cards[i].getAttribute('price')+"</td>";
-        str+="<td>"+cards[i].getAttribute('action')+"</td></tr>";
-      }
+        str+="<tr><td>"+$(this).attr('name')+"</td><td>"+$(this).attr('copies')+"</td>";
+        str+="<td style='text-align:center'>"+$(this).attr('price')+"</td><td>"+$(this).attr('action')+"</td></tr>";
+      })
       str+="</table>";
-      str+="<button onclick='view_data()'>Back</button>"
-      document.getElementById('curve_chart').innerHTML=str;
-    }
-  };
-  xmlhttp.open("GET", "http://localhost/tests_folder/price_trend_getter/functions.php?mode="+7, true);
-  xmlhttp.send();
+      str+="<button onclick='view_data()'>Back</button>";
+      $('#curve_chart')
+      .html(str);
+    });
 }
