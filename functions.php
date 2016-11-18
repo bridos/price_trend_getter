@@ -4,79 +4,73 @@ $cardarray = array();	//this will hold all the monitored cards
 $curlarray=array();		//this is used for the parallel curl request
 $patharray=array();		//this will hold the paths for the parallel curl request
 $responsearray=array();	//this will hold the responces of each parallel curl request
-function array_from_file()	
-{	//subject to change
-	//this function reads the csv with the values for monitored cards
-	//the form of the file is cardname;cardset;prices;p1,p2,p3,p4...
-	$row = 1;
-	$price_array=array();	//we need an array to hold the prices
-	if (($handle = fopen("cards.csv", "r")) !== FALSE)
+function array_from_file()
+{
+	$conn = mysqli_connect('localhost','root','','price_trend_getter_db');
+	//create query
+	$sql="SELECT * FROM monitored_cards";
+	$rez=mysqli_query($conn,$sql);
+	$price_array=array();
+	while($row=mysqli_fetch_assoc($rez))
 	{
-    	while (($data = fgetcsv($handle, 1000, ";")) !== FALSE)
-    	{
-        	$num = count($data);	//data holds an array with the values read
-        	$name='';
-        	$set='';
-       		unset($price_array);	
-       		$price_array=array();
-        	//echo "<p> $num fields in line $row: <br /></p>\n";
-        	$row++;
-        	for ($c=0; $c < $num; $c++)
-        	{	//we iterate throught the data array and assign the name and set (if c==0 and else)
-        	    if ($c==0)
-        	    	$name=$data[$c];
-        	    else if($c==2)	//if c==2 then we have the prices 
-        	    {	
-            		$tok=strtok($data[$c],',');	//we need to tokenize them 
-            		while($tok!==false)
-            		{
-            			$price_array[]=$tok;	//and assign them to the price array
-            			$tok=strtok(',');
-            		}
-            	}
-            	else
-           			$set=$data[$c];	
-            } 
-            //now that we are done, we store the new entry to the cardarray
-            $GLOBALS['cardarray'][$name]=array("name"=>$name,"set"=>$set,"values"=>$price_array);
-        }
-    }
-    fclose($handle);
+		unset($price_array);	
+       	$price_array=array();
+       	$name=$row['card_name'];
+       	$set=$row['set_name'];
+       	$prices=$row['prices'];
+       	$price_array=tokenize_prices($prices);
+       	$GLOBALS['cardarray'][$name]=array("name"=>$name,"set"=>$set,"values"=>$price_array);
+	}
+	mysqli_close($conn);
+	//echo '<pre>';
+	//echo print_r($GLOBALS['cardarray']);
+	//echo '</pre>';
 }
 function file_from_array()
-{	//here we save the cardarray to a file
-	//we write: name;set;p1,p2,p3... where pi are the prices
-	$j=0;
-	$handle=fopen('cards.csv','w');
-	foreach($GLOBALS['cardarray'] as $key=>$value)
-	{	$str='';
-		$i=0;
-		$len_cardarray=count($GLOBALS['cardarray']);
-		foreach($value as $field=>$val)
-		{	
-			if($field=='values')
-			{	$len=count($val);
-				foreach ($val as $index => $price)
-				{	
-					if($i==$len-1)
-					$str.=$price;
-					else
-						$str.=$price.',';
-					//echo $price.'<br>';
-					$i++;
-				}
-			}	
-			else
-				$str.=$val.';';
-				//echo $val.'<br>';
-		}
-		if($j==$len_cardarray-1)
-			fwrite($handle, $str);
-		else
-			fwrite($handle, $str."\n");
-		$j++;
+{
+	//echo '<pre>';
+	//echo print_r($GLOBALS['cardarray']);
+	//echo '</pre>';
+	$conn = mysqli_connect('localhost','root','','price_trend_getter_db');
+	//create query
+	$sql="TRUNCATE monitored_cards";
+	mysqli_query($conn,$sql);
+	$str=create_query($GLOBALS['cardarray']);
+	//echo $str;
+	mysqli_multi_query($conn, $str);
+}
+function create_query($arr)
+{	echo "<pre>";
+	//print_r($arr);
+	echo "</pre>";
+	$ret='';
+	foreach($arr as $key=>$value)
+		foreach($value as $index=>$target)
+			if($index=='name')
+				$ret.="INSERT INTO monitored_cards(id,card_name,set_name,prices)VALUES(NULL,'".$target."','";
+			else if($index=='set')
+				$ret.=$target."','";
+			else if($index=='values')
+			{	foreach($target as $place=>$price)
+					$ret.=$price.",";
+				$ret=substr($ret,0,-1);
+				$ret.="');";
+			}
+
+	$ret=substr($ret,0,-1);
+	//echo "ret".$ret;
+	return $ret;
+}
+function tokenize_prices($str)
+{
+	$tmp_arr=[];
+	$tok=strtok($str,',');
+	while($tok!==false)
+	{	array_push($tmp_arr,$tok);
+		$tok=strtok(',');
 	}
-	fclose($handle);
+	return $tmp_arr;
+
 }
 function add_entry($name,$set,$values)
 {	$price_arr=array();
@@ -90,6 +84,7 @@ function add_entry($name,$set,$values)
 function add_value($in_str,$value)
 {	//we add the price value to the previous prices
 	array_push($GLOBALS['cardarray'][$in_str]['values'],$value);
+	array_shift($GLOBALS['cardarray'][$in_str]['values']);
 	//echo '<pre>'.print_r($GLOBALS['cardarray'][$in_str],TRUE) . '</pre>';
 
 }
@@ -494,17 +489,6 @@ function erase_last_entries()
 		$update=$_GET['update'];
 	else
 		$update='';
-	//$mode=7;
-	/*
-	$name='Eldritch Evolution';
-	$set='Eldritch Moon';
-	$arr=[4.0,5.0,6.1];
-	var_dump($arr);
-	$arr=json_encode($arr);
-	var_dump($arr);
-	$arr=json_decode($arr);
-	var_dump($arr);
-	*/
 	//depending on the request we execute the appropriate functions
 	switch($mode)
 	{	case 1:
